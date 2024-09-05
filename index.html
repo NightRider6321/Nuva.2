@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    #verificationForm, #emailForm {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="emailForm">
+    <h2>Enter Your Email</h2>
+    <form id="emailSubmissionForm">
+      <input type="email" id="emailInput" placeholder="Enter your email" required>
+      <button type="submit">Send Code</button>
+    </form>
+  </div>
+
+  <div id="verificationForm">
+    <h2>Enter Verification Code</h2>
+    <form id="codeSubmissionForm">
+      <input type="text" id="codeInput" maxlength="6" placeholder="Enter code" required>
+      <button type="submit">Verify Code</button>
+    </form>
+  </div>
+
+  <div id="message"></div>
+
+  <!-- Include EmailJS library -->
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+  <!-- JavaScript code -->
+  <script>
+    // Initialize EmailJS with your User ID
+    emailjs.init("OzjSPkh9mfJfwvtV1");  // Replace with your actual User ID
+
+    // Generate a random 6-digit code
+    function generateCode() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    // Display email form on page load
+    window.onload = function() {
+      if (!localStorage.getItem('verifiedEmail')) {
+        document.getElementById('emailForm').style.display = 'block';
+      } else {
+        document.getElementById('verificationForm').style.display = 'block';
+      }
+    };
+
+    // Send verification code via email
+    document.getElementById('emailSubmissionForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      const code = generateCode();
+
+      // Send the email with the verification code
+      emailjs.send('service_b55hloh', 'template_zurze3g', {
+        user_email: email,         // The recipient's email address
+        verification_code: code    // The verification code to be sent
+      })
+      .then(function(response) {
+        console.log('Code sent successfully!', response.status, response.text);
+        localStorage.setItem('verificationCode', code);  // Store the code in localStorage
+        document.getElementById('emailForm').style.display = 'none';
+        document.getElementById('verificationForm').style.display = 'block';
+      })
+      .catch(function(error) {
+        console.log('Failed to send code.', error);
+      });
+    });
+
+    // Verify the code entered by the user
+    document.getElementById('codeSubmissionForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const enteredCode = document.getElementById('codeInput').value;
+      const storedCode = localStorage.getItem('verificationCode');
+
+      if (enteredCode === storedCode) {
+        document.getElementById('message').textContent = 'Verification successful!';
+        localStorage.setItem('verifiedEmail', 'true');
+        document.getElementById('verificationForm').style.display = 'none';
+      } else {
+        document.getElementById('message').textContent = 'Invalid code, please try again.';
+      }
+    });
+  </script>
+</body>
+</html>
